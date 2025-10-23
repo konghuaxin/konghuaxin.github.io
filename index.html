@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>销售客户跟进系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb',
+            secondary: '#4f46e5',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .shadow-soft {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-gray-800 min-h-screen">
+  <!-- 登录页面 -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-soft overflow-hidden">
+      <div class="p-6 sm:p-8">
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">销售客户跟进系统</h2>
+          <p class="mt-2 text-gray-500">请使用账号登录</p>
+        </div>
+        
+        <form id="login-form" class="space-y-4">
+          <div id="login-error" class="hidden p-3 bg-red-50 text-red-600 rounded-lg text-sm"></div>
+          
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                <i class="fa fa-user"></i>
+              </span>
+              <input type="text" id="username" required
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+            </div>
+          </div>
+          
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                <i class="fa fa-lock"></i>
+              </span>
+              <input type="password" id="password" required
+                class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+            </div>
+          </div>
+          
+          <div>
+            <button type="submit" 
+              class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all shadow-sm hover:shadow">
+              <i class="fa fa-sign-in mr-2"></i> 登录
+            </button>
+          </div>
+        </form>
+        
+        <div class="mt-4 text-center text-sm">
+          <p class="text-gray-500">还没有账号？ <button id="show-register" class="text-primary hover:underline">立即注册</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 注册模态框 -->
+  <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">用户注册</h3>
+        <button id="close-register" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="register-form" class="p-5 space-y-4">
+        <div id="register-error" class="hidden p-3 bg-red-50 text-red-600 rounded-lg text-sm"></div>
+        
+        <div>
+          <label for="reg-username" class="block text-sm font-medium text-gray-700 mb-1">用户名 <span class="text-danger">*</span></label>
+          <input type="text" id="reg-username" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="reg-name" class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-danger">*</span></label>
+          <input type="text" id="reg-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="reg-password" class="block text-sm font-medium text-gray-700 mb-1">密码 <span class="text-danger">*</span></label>
+          <input type="password" id="reg-password" required minlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="reg-confirm" class="block text-sm font-medium text-gray-700 mb-1">确认密码 <span class="text-danger">*</span></label>
+          <input type="password" id="reg-confirm" required minlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div id="admin-registration" class="hidden">
+          <label for="reg-role" class="block text-sm font-medium text-gray-700 mb-1">用户角色 <span class="text-danger">*</span></label>
+          <select id="reg-role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="salesman">业务员</option>
+            <option value="admin">管理员</option>
+          </select>
+        </div>
+        
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" id="cancel-register" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            注册
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 主系统界面 -->
+  <div id="app" class="hidden flex flex-col h-screen">
+    <!-- 顶部导航 -->
+    <header class="bg-white border-b border-gray-200 shadow-sm">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center">
+            <div class="text-primary font-bold text-xl flex items-center">
+              <i class="fa fa-handshake-o mr-2"></i>
+              <span>客户跟进系统</span>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <div id="user-role-badge" class="hidden px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
+              管理员
+            </div>
+            
+            <div class="relative">
+              <button id="notify-btn" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                <i class="fa fa-bell-o text-gray-600"></i>
+                <span id="notify-badge" class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full hidden"></span>
+              </button>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+              <img id="user-avatar" src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full">
+              <span id="user-name" class="text-sm font-medium"></span>
+              <button id="logout-btn" class="text-gray-500 hover:text-danger">
+                <i class="fa fa-sign-out"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 flex overflow-hidden">
+      <!-- 侧边栏 -->
+      <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:block">
+        <nav class="p-4 h-full flex flex-col">
+          <div class="space-y-1">
+            <a href="#dashboard" class="nav-item active flex items-center px-3 py-2.5 text-sm font-medium rounded-lg bg-primary/10 text-primary">
+              <i class="fa fa-dashboard w-5 h-5 mr-3"></i>
+              <span>仪表盘</span>
+            </a>
+            <a href="#customers" class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+              <i class="fa fa-users w-5 h-5 mr-3"></i>
+              <span>客户管理</span>
+            </a>
+            <a href="#followups" class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+              <i class="fa fa-history w-5 h-5 mr-3"></i>
+              <span>跟进记录</span>
+            </a>
+            <a href="#tasks" class="nav-item flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+              <i class="fa fa-tasks w-5 h-5 mr-3"></i>
+              <span>待办任务</span>
+              <span id="task-count" class="ml-auto bg-danger text-white text-xs px-2 py-0.5 rounded-full">0</span>
+            </a>
+            <a href="#salesmen" class="nav-item hidden flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100">
+              <i class="fa fa-user-o w-5 h-5 mr-3"></i>
+              <span>业务员管理</span>
+            </a>
+          </div>
+        </nav>
+      </aside>
+
+      <!-- 移动端菜单按钮 -->
+      <button id="mobile-menu-btn" class="md:hidden fixed bottom-6 right-6 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center z-10">
+        <i class="fa fa-bars"></i>
+      </button>
+
+      <!-- 内容区域 -->
+      <div class="flex-1 overflow-y-auto p-4 md:p-6" id="content">
+        <!-- 仪表盘页面 -->
+        <div id="dashboard-page" class="page active">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold">仪表盘</h1>
+            <p class="text-gray-500 mt-1">欢迎回来，<span id="welcome-name"></span>！以下是您的工作概览</p>
+          </div>
+          
+          <!-- 数据卡片 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-soft hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">总客户数</p>
+                  <h3 class="text-2xl font-bold mt-1" id="total-customers">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <i class="fa fa-users"></i>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-soft hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">今日待跟进</p>
+                  <h3 class="text-2xl font-bold mt-1" id="today-followups">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+                  <i class="fa fa-calendar"></i>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-soft hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">本月新增</p>
+                  <h3 class="text-2xl font-bold mt-1" id="month-new">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center text-success">
+                  <i class="fa fa-user-plus"></i>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-soft hover:shadow-md transition-shadow">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-gray-500 text-sm">公海客户</p>
+                  <h3 class="text-2xl font-bold mt-1" id="pool-customers">0</h3>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+                  <i class="fa fa-shopping-basket"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 今日待跟进 -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft mb-6">
+            <div class="p-5 border-b border-gray-200">
+              <div class="flex justify-between items-center">
+                <h3 class="font-semibold text-lg">今日待跟进客户</h3>
+                <button onclick="openFollowupModal()" class="text-sm bg-primary text-white px-3 py-1 rounded-lg hover:bg-primary/90">
+                  <i class="fa fa-plus mr-1"></i> 添加跟进
+                </button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">客户名称</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">负责人</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">上次跟进</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="today-follow-list" class="divide-y divide-gray-100">
+                  <!-- 待跟进列表 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 客户管理页面 -->
+        <div id="customers-page" class="page hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold">客户管理</h1>
+            <p class="text-gray-500 mt-1">管理所有客户信息和状态</p>
+          </div>
+          
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft p-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="relative w-full md:w-64">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                  <i class="fa fa-search"></i>
+                </span>
+                <input type="text" id="customer-search" placeholder="搜索客户..." 
+                  class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+              </div>
+              
+              <div class="flex flex-wrap gap-3">
+                <select id="customer-salesman" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary">
+                  <option value="">所有业务员</option>
+                </select>
+                
+                <select id="customer-filter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary">
+                  <option value="">所有状态</option>
+                  <option value="potential">潜在客户</option>
+                  <option value="following">跟进中</option>
+                  <option value="dealt">已成交</option>
+                  <option value="lost">已流失</option>
+                </select>
+                
+                <select id="customer-pool-filter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary">
+                  <option value="">所有客户</option>
+                  <option value="in_pool">公海客户</option>
+                  <option value="my">我的客户</option>
+                </select>
+                
+                <!-- 导入导出按钮 -->
+                <button onclick="downloadCustomerTemplate()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200">
+                  <i class="fa fa-download mr-1"></i> 模板
+                </button>
+                <button onclick="document.getElementById('import-file').click()" class="bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary/90">
+                  <i class="fa fa-upload mr-1"></i> 导入
+                </button>
+                <button onclick="exportCustomers()" class="bg-success text-white px-4 py-2 rounded-lg hover:bg-success/90">
+                  <i class="fa fa-download mr-1"></i> 导出
+                </button>
+                <input type="file" id="import-file" accept=".csv" class="hidden" onchange="importCustomers(event)">
+                
+                <button onclick="openCustomerModal()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                  <i class="fa fa-plus mr-1"></i> 新增客户
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 客户表格 -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div id="pool-badge" class="hidden bg-secondary/10 text-secondary p-3 border-b border-gray-200">
+              <i class="fa fa-info-circle mr-2"></i> 公海客户：任何业务员都可以领取这些客户进行跟进
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">客户名称</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">联系人</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">电话</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">负责人</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">下次跟进</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="customers-list" class="divide-y divide-gray-100">
+                  <!-- 客户列表 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 跟进记录页面 -->
+        <div id="followups-page" class="page hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold">跟进记录</h1>
+            <p class="text-gray-500 mt-1">所有客户的沟通记录</p>
+          </div>
+          
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft p-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="relative w-full md:w-64">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                  <i class="fa fa-search"></i>
+                </span>
+                <input type="text" id="followup-search" placeholder="搜索记录..." 
+                  class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+              </div>
+              
+              <button onclick="openFollowupModal()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                <i class="fa fa-plus mr-1"></i> 新增记录
+              </button>
+            </div>
+          </div>
+          
+          <!-- 跟进记录表格 -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">客户名称</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">跟进人</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">跟进方式</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">跟进内容</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">跟进时间</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="followups-list" class="divide-y divide-gray-100">
+                  <!-- 跟进记录列表 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 待办任务页面 -->
+        <div id="tasks-page" class="page hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold">待办任务</h1>
+            <p class="text-gray-500 mt-1">需要跟进的客户任务</p>
+          </div>
+          
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft p-4 mb-6 hidden" id="task-filter-container">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="flex gap-3">
+                <select id="task-salesman" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary">
+                  <option value="">所有业务员</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 任务列表 -->
+          <div class="space-y-4" id="tasks-container">
+            <!-- 任务项 -->
+          </div>
+        </div>
+        
+        <!-- 业务员管理页面 -->
+        <div id="salesmen-page" class="page hidden">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold">业务员管理</h1>
+            <p class="text-gray-500 mt-1">管理系统中的业务员账号</p>
+          </div>
+          
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft p-4 mb-6">
+            <div class="flex justify-end">
+              <button onclick="showAddSalesmanModal()" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                <i class="fa fa-plus mr-1"></i> 添加业务员
+              </button>
+            </div>
+          </div>
+          
+          <!-- 业务员表格 -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">用户名</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">姓名</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">角色</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">客户数量</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="salesmen-list" class="divide-y divide-gray-100">
+                  <!-- 业务员列表 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 客户编辑模态框 -->
+  <div id="customer-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold" id="customer-modal-title">新增客户</h3>
+        <button onclick="closeCustomerModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="customer-form" class="p-5 space-y-4">
+        <input type="hidden" id="customer-id">
+        
+        <div>
+          <label for="customer-name" class="block text-sm font-medium text-gray-700 mb-1">客户名称 <span class="text-danger">*</span></label>
+          <input type="text" id="customer-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="contact-person" class="block text-sm font-medium text-gray-700 mb-1">联系人 <span class="text-danger">*</span></label>
+          <input type="text" id="contact-person" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="contact-phone" class="block text-sm font-medium text-gray-700 mb-1">联系电话 <span class="text-danger">*</span></label>
+          <input type="tel" id="contact-phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="customer-salesman-id" class="block text-sm font-medium text-gray-700 mb-1">负责业务员</label>
+          <select id="customer-salesman-id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="">放入公海（未分配）</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="customer-status" class="block text-sm font-medium text-gray-700 mb-1">客户状态 <span class="text-danger">*</span></label>
+          <select id="customer-status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="potential">潜在客户</option>
+            <option value="following">跟进中</option>
+            <option value="dealt">已成交</option>
+            <option value="lost">已流失</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="next-follow-date" class="block text-sm font-medium text-gray-700 mb-1">下次跟进日期</label>
+          <input type="date" id="next-follow-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="customer-notes" class="block text-sm font-medium text-gray-700 mb-1">备注信息</label>
+          <textarea id="customer-notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary"></textarea>
+        </div>
+        
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeCustomerModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 跟进记录模态框 -->
+  <div id="followup-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">新增跟进记录</h3>
+        <button onclick="closeFollowupModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="followup-form" class="p-5 space-y-4">
+        <input type="hidden" id="followup-id">
+        
+        <div>
+          <label for="followup-customer" class="block text-sm font-medium text-gray-700 mb-1">客户 <span class="text-danger">*</span></label>
+          <select id="followup-customer" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="">选择客户</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="followup-type" class="block text-sm font-medium text-gray-700 mb-1">跟进方式 <span class="text-danger">*</span></label>
+          <select id="followup-type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="call">电话</option>
+            <option value="meeting">面谈</option>
+            <option value="wechat">微信</option>
+            <option value="email">邮件</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="followup-date" class="block text-sm font-medium text-gray-700 mb-1">跟进时间 <span class="text-danger">*</span></label>
+          <input type="datetime-local" id="followup-date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="followup-content" class="block text-sm font-medium text-gray-700 mb-1">跟进内容 <span class="text-danger">*</span></label>
+          <textarea id="followup-content" rows="4" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary"></textarea>
+        </div>
+        
+        <div>
+          <label for="followup-next-date" class="block text-sm font-medium text-gray-700 mb-1">下次跟进日期</label>
+          <input type="date" id="followup-next-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+          <p class="text-xs text-gray-500 mt-1">不填写则表示本次跟进完成，不会出现在待办任务中</p>
+        </div>
+        
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeFollowupModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            保存记录
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 添加业务员模态框 -->
+  <div id="add-salesman-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">添加业务员</h3>
+        <button onclick="closeAddSalesmanModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="add-salesman-form" class="p-5 space-y-4">
+        <div id="salesman-error" class="hidden p-3 bg-red-50 text-red-600 rounded-lg text-sm"></div>
+        
+        <div>
+          <label for="salesman-username" class="block text-sm font-medium text-gray-700 mb-1">用户名 <span class="text-danger">*</span></label>
+          <input type="text" id="salesman-username" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="salesman-name" class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-danger">*</span></label>
+          <input type="text" id="salesman-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="salesman-password" class="block text-sm font-medium text-gray-700 mb-1">密码 <span class="text-danger">*</span></label>
+          <input type="password" id="salesman-password" required minlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+        </div>
+        
+        <div>
+          <label for="salesman-role" class="block text-sm font-medium text-gray-700 mb-1">角色 <span class="text-danger">*</span></label>
+          <select id="salesman-role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="salesman">业务员</option>
+            <option value="admin">管理员</option>
+          </select>
+        </div>
+        
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeAddSalesmanModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            添加
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 导入结果模态框 -->
+  <div id="import-result-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">导入结果</h3>
+        <button onclick="closeImportResultModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="p-5">
+        <div id="import-success" class="hidden mb-4 p-3 bg-green-50 text-green-600 rounded-lg text-sm">
+          <i class="fa fa-check-circle mr-2"></i>
+          <span id="import-success-count"></span>
+        </div>
+        
+        <div id="import-errors" class="hidden">
+          <p class="text-red-600 font-medium mb-2">导入失败项：</p>
+          <ul id="import-error-list" class="text-sm text-red-500 space-y-1 max-h-40 overflow-y-auto"></ul>
+        </div>
+        
+        <div class="pt-2 flex justify-end">
+          <button onclick="closeImportResultModal()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            确定
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认删除模态框 -->
+  <div id="confirm-delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-5 border-b border-gray-200">
+        <h3 class="text-lg font-semibold">确认删除</h3>
+      </div>
+      
+      <div class="p-5">
+        <p class="text-gray-600 mb-4" id="delete-confirm-message">您确定要删除吗？此操作无法恢复。</p>
+        <input type="hidden" id="delete-id">
+        <input type="hidden" id="delete-type">
+        
+        <div class="flex justify-end gap-3">
+          <button onclick="closeDeleteModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button onclick="confirmDelete()" class="px-4 py-2 bg-danger hover:bg-danger/90 text-white rounded-lg">
+            确认删除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认操作模态框（用于领取/放回客户） -->
+  <div id="confirm-action-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-5 border-b border-gray-200">
+        <h3 class="text-lg font-semibold" id="action-modal-title">确认操作</h3>
+      </div>
+      
+      <div class="p-5">
+        <p class="text-gray-600 mb-4" id="action-confirm-message"></p>
+        <input type="hidden" id="action-id">
+        <input type="hidden" id="action-type">
+        
+        <div class="flex justify-end gap-3">
+          <button onclick="closeActionModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button onclick="confirmAction()" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            确认
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分配客户模态框 -->
+  <div id="assign-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+      <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-semibold">分配客户</h3>
+        <button onclick="closeAssignModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="assign-form" class="p-5 space-y-4">
+        <input type="hidden" id="assign-customer-id">
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">客户名称</label>
+          <p id="assign-customer-name" class="p-2 bg-gray-50 rounded border border-gray-200"></p>
+        </div>
+        
+        <div>
+          <label for="assign-salesman" class="block text-sm font-medium text-gray-700 mb-1">分配给 <span class="text-danger">*</span></label>
+          <select id="assign-salesman" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary">
+            <option value="">选择业务员</option>
+          </select>
+        </div>
+        
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeAssignModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg">
+            确认分配
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // 数据持久化工具函数
+    function saveData(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (e) {
+        console.error('保存数据失败:', e);
+        alert('数据保存失败，请检查浏览器存储空间');
+      }
+    }
+
+    function loadData(key) {
+      try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+      } catch (e) {
+        console.error('加载数据失败:', e);
+        return null;
+      }
+    }
+
+    // 保存所有数据
+    function saveAllData() {
+      saveData('salesSystemUsers', mockData.users);
+      saveData('salesSystemCustomers', mockData.customers);
+      saveData('salesSystemFollowups', mockData.followups);
+    }
+
+    // 全局数据和状态
+    let currentUser = null;
+    const today = new Date().toISOString().split('T')[0];
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    // 初始化模拟数据 - 优先从localStorage加载
+    let mockData = {
+      users: [],
+      customers: [],
+      followups: []
+    };
+    
+    // 从localStorage加载数据，如果没有则使用默认数据
+    const loadInitialData = () => {
+      const savedUsers = loadData('salesSystemUsers');
+      const savedCustomers = loadData('salesSystemCustomers');
+      const savedFollowups = loadData('salesSystemFollowups');
+      
+      // 如果没有保存的数据，则使用默认数据
+      if (!savedUsers || savedUsers.length === 0) {
+        mockData.users = [
+          { id: 1, username: 'admin', password: '123456', name: '系统管理员', avatar: 'https://picsum.photos/200/200?random=10', role: 'admin' },
+          { id: 2, username: 'zhangsan', password: '123456', name: '张三', avatar: 'https://picsum.photos/200/200?random=1', role: 'salesman' },
+          { id: 3, username: 'lisi', password: '123456', name: '李四', avatar: 'https://picsum.photos/200/200?random=2', role: 'salesman' },
+          { id: 4, username: 'wangwu', password: '123456', name: '王五', avatar: 'https://picsum.photos/200/200?random=3', role: 'salesman' }
+        ];
+      } else {
+        mockData.users = savedUsers;
+      }
+      
+      if (!savedCustomers || savedCustomers.length === 0) {
+        mockData.customers = [
+          { 
+            id: 1, 
+            name: '北京科技有限公司', 
+            contactPerson: '张经理', 
+            contactPhone: '13800138000', 
+            status: 'following',
+            salesmanId: 2, // 张三负责
+            nextFollowDate: today,
+            lastFollowDate: '2023-10-10',
+            notes: '需要提供新的报价方案',
+            createTime: new Date().toISOString()
+          },
+          { 
+            id: 2, 
+            name: '上海贸易公司', 
+            contactPerson: '李总', 
+            contactPhone: '13900139000', 
+            status: 'potential',
+            salesmanId: 2, // 张三负责
+            nextFollowDate: today,
+            lastFollowDate: '',
+            notes: '通过展会获取的客户',
+            createTime: new Date().toISOString()
+          },
+          { 
+            id: 3, 
+            name: '广州实业集团', 
+            contactPerson: '王经理', 
+            contactPhone: '13700137000', 
+            status: 'dealt',
+            salesmanId: 3, // 李四负责
+            nextFollowDate: '2023-11-05',
+            lastFollowDate: '2023-10-01',
+            notes: '已签订年度合同',
+            createTime: new Date().toISOString()
+          },
+          // 公海客户（未分配业务员）
+          { 
+            id: 6, 
+            name: '成都网络科技', 
+            contactPerson: '刘经理', 
+            contactPhone: '13400134000', 
+            status: 'potential',
+            salesmanId: null, // 公海客户
+            nextFollowDate: '',
+            lastFollowDate: '',
+            notes: '网站咨询客户',
+            createTime: new Date().toISOString()
+          }
+        ];
+      } else {
+        mockData.customers = savedCustomers;
+      }
+      
+      if (!savedFollowups || savedFollowups.length === 0) {
+        mockData.followups = [
+          {
+            id: 1,
+            customerId: 1,
+            customerName: '北京科技有限公司',
+            userId: 2, // 张三跟进
+            userName: '张三',
+            type: 'meeting',
+            date: '2023-10-10T14:30',
+            content: '与张经理讨论了产品细节，客户对A方案比较感兴趣，需要准备详细报价',
+            nextDate: today
+          }
+        ];
+      } else {
+        mockData.followups = savedFollowups;
+      }
+      
+      // 保存初始化数据
+      saveAllData();
+    };
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 加载数据
+      loadInitialData();
+      
+      // 设置默认时间
+      const now = new Date();
+      const dateTimeValue = now.toISOString().slice(0, 16);
+      document.getElementById('followup-date').value = dateTimeValue;
+      
+      // 绑定事件
+      document.getElementById('login-form').addEventListener('submit', handleLogin);
+      document.getElementById('logout-btn').addEventListener('click', handleLogout);
+      document.getElementById('customer-form').addEventListener('submit', saveCustomer);
+      document.getElementById('followup-form').addEventListener('submit', saveFollowup);
+      document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+      document.getElementById('notify-btn').addEventListener('click', showNotifications);
+      document.getElementById('add-salesman-form').addEventListener('submit', addSalesman);
+      document.getElementById('assign-form').addEventListener('submit', handleAssign);
+      
+      // 注册相关事件
+      document.getElementById('show-register').addEventListener('click', showRegisterModal);
+      document.getElementById('close-register').addEventListener('click', hideRegisterModal);
+      document.getElementById('cancel-register').addEventListener('click', hideRegisterModal);
+      document.getElementById('register-form').addEventListener('submit', handleRegister);
+      
+      // 客户公海筛选事件
+      document.getElementById('customer-pool-filter').addEventListener('change', filterCustomers);
+      
+      // 导航点击事件
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          const target = this.getAttribute('href').substring(1);
+          switchPage(target);
+        });
+      });
+      
+      // 搜索和筛选事件
+      document.getElementById('customer-search').addEventListener('input', filterCustomers);
+      document.getElementById('followup-search').addEventListener('input', filterFollowups);
+      document.getElementById('customer-filter').addEventListener('change', filterCustomers);
+      document.getElementById('customer-salesman').addEventListener('change', filterCustomers);
+      document.getElementById('task-salesman').addEventListener('change', filterTasks);
+    });
+
+    // 权限检查函数
+    function hasPermission(permission) {
+      // 管理员拥有所有权限
+      if (currentUser && currentUser.role === 'admin') {
+        return true;
+      }
+      
+      // 业务员权限
+      if (currentUser && currentUser.role === 'salesman') {
+        // 业务员只能查看自己的客户和记录
+        return permission === 'own_data';
+      }
+      
+      return false;
+    }
+
+    // 处理登录
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorEl = document.getElementById('login-error');
+      
+      // 查找用户
+      const user = mockData.users.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        currentUser = user;
+        errorEl.classList.add('hidden');
+        
+        // 显示系统界面
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        
+        // 更新用户信息
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('user-avatar').src = user.avatar;
+        document.getElementById('welcome-name').textContent = user.name;
+        
+        // 显示角色标识
+        if (user.role === 'admin') {
+          document.getElementById('user-role-badge').classList.remove('hidden');
+          document.querySelector('.nav-item[href="#salesmen"]').classList.remove('hidden');
+          document.getElementById('task-filter-container').classList.remove('hidden');
+        } else {
+          document.getElementById('user-role-badge').classList.add('hidden');
+          document.querySelector('.nav-item[href="#salesmen"]').classList.add('hidden');
+          document.getElementById('task-filter-container').classList.add('hidden');
+        }
+        
+        // 初始化数据
+        initSystemData();
+      } else {
+        errorEl.textContent = '用户名或密码不正确';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    // 处理注册
+    function handleRegister(e) {
+      e.preventDefault();
+      const username = document.getElementById('reg-username').value;
+      const name = document.getElementById('reg-name').value;
+      const password = document.getElementById('reg-password').value;
+      const confirm = document.getElementById('reg-confirm').value;
+      const errorEl = document.getElementById('register-error');
+      
+      // 验证
+      if (password !== confirm) {
+        errorEl.textContent = '两次输入的密码不一致';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      if (password.length < 6) {
+        errorEl.textContent = '密码长度不能少于6位';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      // 检查用户名是否已存在
+      const userExists = mockData.users.some(u => u.username === username);
+      if (userExists) {
+        errorEl.textContent = '用户名已存在';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      // 确定角色（普通注册默认为业务员，管理员可以注册其他角色）
+      let role = 'salesman';
+      if (currentUser && currentUser.role === 'admin') {
+        role = document.getElementById('reg-role').value;
+      }
+      
+      // 创建新用户
+      const newId = Math.max(...mockData.users.map(u => u.id), 0) + 1;
+      mockData.users.push({
+        id: newId,
+        username,
+        password,
+        name,
+        avatar: `https://picsum.photos/200/200?random=${newId + 10}`,
+        role: role
+      });
+      
+      // 保存数据
+      saveData('salesSystemUsers', mockData.users);
+      
+      // 注册成功，返回登录
+      hideRegisterModal();
+      document.getElementById('username').value = username;
+      document.getElementById('password').value = '';
+      
+      // 显示成功提示
+      const loginError = document.getElementById('login-error');
+      loginError.className = 'p-3 bg-green-50 text-green-600 rounded-lg text-sm';
+      loginError.textContent = '注册成功，请登录';
+      loginError.classList.remove('hidden');
+    }
+
+    // 显示注册模态框
+    function showRegisterModal() {
+      document.getElementById('register-form').reset();
+      document.getElementById('register-error').classList.add('hidden');
+      
+      // 只有管理员可以注册其他角色
+      if (currentUser && currentUser.role === 'admin') {
+        document.getElementById('admin-registration').classList.remove('hidden');
+      } else {
+        document.getElementById('admin-registration').classList.add('hidden');
+      }
+      
+      document.getElementById('register-modal').classList.remove('hidden');
+    }
+
+    // 隐藏注册模态框
+    function hideRegisterModal() {
+      document.getElementById('register-modal').classList.add('hidden');
+    }
+
+    // 处理退出登录
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById('app').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('login-form').reset();
+      document.getElementById('login-error').classList.add('hidden');
+    }
+
+    // 初始化系统数据
+    function initSystemData() {
+      populateSalesmanSelects();
+      renderDashboard();
+      renderCustomers();
+      renderFollowups();
+      renderTasks();
+      renderSalesmen();
+    }
+
+    // 切换页面
+    function switchPage(pageId) {
+      // 检查权限（业务员不能访问业务员管理页面）
+      if (pageId === 'salesmen' && !hasPermission('admin')) {
+        return;
+      }
+      
+      // 更新导航选中状态
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active', 'bg-primary/10', 'text-primary');
+        item.classList.add('text-gray-700', 'hover:bg-gray-100');
+      });
+      
+      document.querySelector(`.nav-item[href="#${pageId}"]`).classList.add('active', 'bg-primary/10', 'text-primary');
+      
+      // 更新页面显示
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.add('hidden');
+      });
+      
+      document.getElementById(`${pageId}-page`).classList.remove('hidden');
+      
+      // 在移动设备上关闭菜单
+      if (window.innerWidth < 768) {
+        document.querySelector('aside').classList.add('hidden');
+      }
+    }
+
+    // 填充所有业务员选择框
+    function populateSalesmanSelects() {
+      // 获取所有业务员选择框
+      const selects = [
+        document.getElementById('customer-salesman-id'),
+        document.getElementById('customer-salesman'),
+        document.getElementById('task-salesman')
+      ];
+      
+      // 筛选业务员（包括管理员）
+      const salesmen = mockData.users;
+      
+      selects.forEach(select => {
+        if (!select) return;
+        
+        // 保存当前选中值
+        const currentValue = select.value;
+        
+        // 清除现有选项（保留第一个空选项）
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+        
+        // 添加业务员选项
+        salesmen.forEach(salesman => {
+          const option = document.createElement('option');
+          option.value = salesman.id;
+          option.textContent = `${salesman.name} (${salesman.role === 'admin' ? '管理员' : '业务员'})`;
+          select.appendChild(option);
+        });
+        
+        // 如果是当前用户且没有选中值，默认选中自己
+        if (!currentValue && currentUser && select.id !== 'task-salesman') {
+          select.value = currentUser.id;
+        } else if (currentValue) {
+          select.value = currentValue;
+        }
+      });
+    }
+
+    // 渲染仪表盘
+    function renderDashboard() {
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => c.salesmanId === currentUser.id);
+      }
+      
+      // 更新统计数据
+      document.getElementById('total-customers').textContent = accessibleCustomers.length;
+      
+      const todayFollowups = accessibleCustomers.filter(c => c.nextFollowDate === today);
+      document.getElementById('today-followups').textContent = todayFollowups.length;
+      
+      // 本月新增客户
+      const monthNew = accessibleCustomers.filter(c => {
+        const createDate = new Date(c.createTime);
+        return createDate.getMonth() === currentMonth && createDate.getFullYear() === currentYear;
+      }).length;
+      document.getElementById('month-new').textContent = monthNew;
+      
+      // 公海客户数量
+      const poolCount = mockData.customers.filter(c => c.salesmanId === null).length;
+      document.getElementById('pool-customers').textContent = poolCount;
+      
+      // 渲染今日待跟进列表
+      const followListEl = document.getElementById('today-follow-list');
+      followListEl.innerHTML = '';
+      
+      if (todayFollowups.length === 0) {
+        followListEl.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+              今日没有需要跟进的客户
+            </td>
+          </tr>
+        `;
+      } else {
+        todayFollowups.forEach(customer => {
+          const salesman = mockData.users.find(u => u.id === customer.salesmanId);
+          const salesmanName = salesman ? salesman.name : '未分配';
+          
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-gray-50';
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium">${customer.name}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-600">${salesmanName}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-600">${customer.lastFollowDate || '无'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button onclick="openFollowupModal(${customer.id})" class="text-primary hover:text-primary/80 mr-3">
+                跟进
+              </button>
+              <button onclick="editCustomer(${customer.id})" class="text-gray-600 hover:text-gray-900">
+                编辑
+              </button>
+            </td>
+          `;
+          followListEl.appendChild(row);
+        });
+      }
+    }
+
+    // 渲染客户列表
+    function renderCustomers(filtered = null) {
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => 
+          c.salesmanId === currentUser.id || c.salesmanId === null
+        );
+      }
+      
+      const customers = filtered || accessibleCustomers;
+      const listEl = document.getElementById('customers-list');
+      listEl.innerHTML = '';
+      
+      // 显示/隐藏公海提示
+      const poolFilter = document.getElementById('customer-pool-filter').value;
+      if (poolFilter === 'in_pool') {
+        document.getElementById('pool-badge').classList.remove('hidden');
+      } else {
+        document.getElementById('pool-badge').classList.add('hidden');
+      }
+      
+      if (customers.length === 0) {
+        listEl.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+              没有找到客户数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      customers.forEach(customer => {
+        // 状态样式
+        let statusClass = '';
+        let statusText = '';
+        
+        switch(customer.status) {
+          case 'potential':
+            statusClass = 'bg-blue-100 text-blue-800';
+            statusText = '潜在客户';
+            break;
+          case 'following':
+            statusClass = 'bg-yellow-100 text-yellow-800';
+            statusText = '跟进中';
+            break;
+          case 'dealt':
+            statusClass = 'bg-green-100 text-green-800';
+            statusText = '已成交';
+            break;
+          case 'lost':
+            statusClass = 'bg-red-100 text-red-800';
+            statusText = '已流失';
+            break;
+        }
+        
+        // 获取业务员信息
+        const salesman = customer.salesmanId ? mockData.users.find(u => u.id === customer.salesmanId) : null;
+        const salesmanName = salesman ? salesman.name : '<span class="text-secondary font-medium">公海</span>';
+        
+        // 操作按钮
+        let actionButtons = '';
+        if (customer.salesmanId === null) {
+          // 公海客户 - 显示领取按钮和管理员分配按钮
+          actionButtons = `
+            ${hasPermission('admin') ? `
+              <button onclick="openAssignModal(${customer.id})" class="text-primary hover:text-primary/80 mr-3">
+                分配
+              </button>
+            ` : ''}
+            <button onclick="showActionModal(${customer.id}, 'claim')" class="text-secondary hover:text-secondary/80 mr-3">
+              领取
+            </button>
+            <button onclick="editCustomer(${customer.id})" class="text-gray-600 hover:text-gray-900 mr-3">
+              查看
+            </button>
+            ${hasPermission('admin') ? `
+              <button onclick="showDeleteModal(${customer.id}, 'customer')" class="text-danger hover:text-danger/80">
+                删除
+              </button>
+            ` : ''}
+          `;
+        } else {
+          // 已分配客户
+          const isOwner = customer.salesmanId === currentUser.id;
+          const canManage = hasPermission('admin') || isOwner;
+          
+          actionButtons = `
+            <button onclick="openFollowupModal(${customer.id})" class="text-primary hover:text-primary/80 mr-3">
+              跟进
+            </button>
+            <button onclick="editCustomer(${customer.id})" class="text-gray-600 hover:text-gray-900 mr-3">
+              编辑
+            </button>
+            ${hasPermission('admin') || isOwner ? `
+              <button onclick="showActionModal(${customer.id}, 'release')" class="text-warning hover:text-warning/80 mr-3">
+                放回公海
+              </button>
+            ` : ''}
+            ${hasPermission('admin') ? `
+              <button onclick="openAssignModal(${customer.id})" class="text-primary hover:text-primary/80 mr-3">
+                重新分配
+              </button>
+              <button onclick="showDeleteModal(${customer.id}, 'customer')" class="text-danger hover:text-danger/80">
+                删除
+              </button>
+            ` : ''}
+          `;
+        }
+        
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium">${customer.name} ${customer.salesmanId === null ? '<span class="text-xs bg-secondary/10 text-secondary px-1.5 py-0.5 rounded ml-2">公海</span>' : ''}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${customer.contactPerson}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${customer.contactPhone}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${salesmanName}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs rounded-full ${statusClass}">${statusText}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600 ${customer.nextFollowDate === today ? 'text-danger font-medium' : ''}">
+              ${customer.nextFollowDate || '无'}
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            ${actionButtons}
+          </td>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    // 筛选客户
+    function filterCustomers() {
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => 
+          c.salesmanId === currentUser.id || c.salesmanId === null
+        );
+      }
+      
+      const searchTerm = document.getElementById('customer-search').value.toLowerCase();
+      const statusFilter = document.getElementById('customer-filter').value;
+      const salesmanFilter = document.getElementById('customer-salesman').value;
+      const poolFilter = document.getElementById('customer-pool-filter').value;
+      
+      const filtered = accessibleCustomers.filter(customer => {
+        const matchesSearch = 
+          customer.name.toLowerCase().includes(searchTerm) ||
+          customer.contactPerson.toLowerCase().includes(searchTerm) ||
+          customer.contactPhone.includes(searchTerm);
+          
+        const matchesStatus = !statusFilter || customer.status === statusFilter;
+        const matchesSalesman = !salesmanFilter || customer.salesmanId == salesmanFilter;
+        const matchesPool = !poolFilter || 
+                           (poolFilter === 'in_pool' && customer.salesmanId === null) ||
+                           (poolFilter === 'my' && customer.salesmanId === currentUser.id);
+        
+        return matchesSearch && matchesStatus && matchesSalesman && matchesPool;
+      });
+      
+      renderCustomers(filtered);
+    }
+
+    // 渲染跟进记录
+    function renderFollowups(filtered = null) {
+      // 获取有权限查看的跟进记录
+      let accessibleFollowups = mockData.followups;
+      if (!hasPermission('admin')) {
+        accessibleFollowups = mockData.followups.filter(f => f.userId === currentUser.id);
+      }
+      
+      const followups = filtered || [...accessibleFollowups].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const listEl = document.getElementById('followups-list');
+      listEl.innerHTML = '';
+      
+      if (followups.length === 0) {
+        listEl.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+              没有跟进记录
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      followups.forEach(followup => {
+        // 跟进方式图标
+        let typeIcon = '';
+        switch(followup.type) {
+          case 'call':
+            typeIcon = '<i class="fa fa-phone text-green-500 mr-1"></i> 电话';
+            break;
+          case 'meeting':
+            typeIcon = '<i class="fa fa-users text-blue-500 mr-1"></i> 面谈';
+            break;
+          case 'wechat':
+            typeIcon = '<i class="fa fa-comments text-green-500 mr-1"></i> 微信';
+            break;
+          case 'email':
+            typeIcon = '<i class="fa fa-envelope text-purple-500 mr-1"></i> 邮件';
+            break;
+          default:
+            typeIcon = '<i class="fa fa-ellipsis-h text-gray-500 mr-1"></i> 其他';
+        }
+        
+        // 格式化日期
+        const date = new Date(followup.date);
+        const formattedDate = date.toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium">${followup.customerName}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${followup.userName}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${typeIcon}</div>
+          </td>
+          <td class="px-6 py-4">
+            <div class="text-sm text-gray-600 line-clamp-2">${followup.content}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${formattedDate}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            ${(hasPermission('admin') || followup.userId === currentUser.id) ? `
+              <button onclick="editFollowup(${followup.id})" class="text-gray-600 hover:text-gray-900 mr-3">
+                编辑
+              </button>
+              ${hasPermission('admin') ? `
+                <button onclick="showDeleteModal(${followup.id}, 'followup')" class="text-danger hover:text-danger/80">
+                  删除
+                </button>
+              ` : ''}
+            ` : ''}
+          </td>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    // 筛选跟进记录
+    function filterFollowups() {
+      // 获取有权限查看的跟进记录
+      let accessibleFollowups = mockData.followups;
+      if (!hasPermission('admin')) {
+        accessibleFollowups = mockData.followups.filter(f => f.userId === currentUser.id);
+      }
+      
+      const searchTerm = document.getElementById('followup-search').value.toLowerCase();
+      
+      const filtered = accessibleFollowups.filter(followup => 
+        followup.customerName.toLowerCase().includes(searchTerm) ||
+        followup.content.toLowerCase().includes(searchTerm)
+      );
+      
+      renderFollowups(filtered);
+    }
+
+    // 渲染待办任务
+    function renderTasks(filtered = null) {
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => c.salesmanId === currentUser.id);
+      }
+      
+      // 筛选出需要跟进的任务：有下次跟进日期，且状态不是已成交或已流失
+      let tasks = accessibleCustomers
+        .filter(c => 
+          c.nextFollowDate && 
+          c.status !== 'dealt' && 
+          c.status !== 'lost'
+        )
+        .sort((a, b) => new Date(a.nextFollowDate) - new Date(b.nextFollowDate));
+      
+      // 应用筛选
+      if (filtered) {
+        tasks = filtered;
+      }
+      
+      const container = document.getElementById('tasks-container');
+      container.innerHTML = '';
+      
+      // 更新任务计数
+      document.getElementById('task-count').textContent = tasks.length;
+      
+      if (tasks.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-xl border border-gray-200 shadow-soft p-6 text-center text-gray-500">
+            没有待办任务
+          </div>
+        `;
+        return;
+      }
+      
+      tasks.forEach(task => {
+        const taskDate = new Date(task.nextFollowDate);
+        const todayDate = new Date(today);
+        const isOverdue = taskDate < todayDate;
+        const isToday = taskDate.toDateString() === todayDate.toDateString();
+        
+        // 获取业务员信息
+        const salesman = mockData.users.find(u => u.id === task.salesmanId);
+        const salesmanName = salesman ? salesman.name : '未分配';
+        
+        let statusClass = '';
+        let statusText = '';
+        
+        if (isOverdue) {
+          statusClass = 'bg-red-50 border-red-200';
+          statusText = `<span class="text-red-600 font-medium">已逾期</span> · ${task.nextFollowDate}`;
+        } else if (isToday) {
+          statusClass = 'bg-yellow-50 border-yellow-200';
+          statusText = `<span class="text-yellow-600 font-medium">今天</span>`;
+        } else {
+          statusClass = 'bg-gray-50 border-gray-200';
+          statusText = task.nextFollowDate;
+        }
+        
+        const taskEl = document.createElement('div');
+        taskEl.className = `bg-white rounded-xl border border-gray-200 shadow-soft p-5 ${statusClass}`;
+        taskEl.innerHTML = `
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="font-medium">${task.name}</h3>
+            <span class="text-sm">${statusText}</span>
+          </div>
+          
+          <div class="text-sm text-gray-600 mb-4">
+            <p><span class="font-medium">联系人：</span>${task.contactPerson} ${task.contactPhone}</p>
+            <p><span class="font-medium">负责人：</span>${salesmanName}</p>
+            ${task.notes ? `<p class="mt-1"><span class="font-medium">备注：</span>${task.notes}</p>` : ''}
+          </div>
+          
+          <div class="flex justify-end">
+            <button onclick="openFollowupModal(${task.id})" class="text-sm bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary/90">
+              <i class="fa fa-phone mr-1"></i> 立即跟进
+            </button>
+          </div>
+        `;
+        container.appendChild(taskEl);
+      });
+    }
+
+    // 筛选任务
+    function filterTasks() {
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => c.salesmanId === currentUser.id);
+      }
+      
+      const salesmanFilter = document.getElementById('task-salesman').value;
+      
+      // 筛选出需要跟进的任务
+      let tasks = accessibleCustomers
+        .filter(c => 
+          c.nextFollowDate && 
+          c.status !== 'dealt' && 
+          c.status !== 'lost' &&
+          (!salesmanFilter || c.salesmanId == salesmanFilter)
+        )
+        .sort((a, b) => new Date(a.nextFollowDate) - new Date(b.nextFollowDate));
+      
+      renderTasks(tasks);
+    }
+
+    // 渲染业务员列表（仅管理员可见）
+    function renderSalesmen() {
+      // 只有管理员可以查看
+      if (!hasPermission('admin')) return;
+      
+      const listEl = document.getElementById('salesmen-list');
+      listEl.innerHTML = '';
+      
+      // 获取所有用户
+      const salesmen = mockData.users;
+      
+      if (salesmen.length === 0) {
+        listEl.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+              没有业务员数据
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      salesmen.forEach(salesman => {
+        // 计算负责的客户数量
+        const customerCount = mockData.customers.filter(c => c.salesmanId === salesman.id).length;
+        
+        // 角色显示
+        const roleText = salesman.role === 'admin' ? '管理员' : '业务员';
+        const roleClass = salesman.role === 'admin' ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-800';
+        
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium">${salesman.username}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${salesman.name}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 text-xs rounded-full ${roleClass}">${roleText}</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600">${customerCount}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            ${salesman.role !== 'admin' ? `
+              <button onclick="showDeleteModal(${salesman.id}, 'salesman')" class="text-danger hover:text-danger/80">
+                删除
+              </button>
+            ` : '<span class="text-gray-400">不可删除</span>'}
+          </td>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    // 打开客户模态框
+    function openCustomerModal() {
+      document.getElementById('customer-modal-title').textContent = '新增客户';
+      document.getElementById('customer-form').reset();
+      document.getElementById('customer-id').value = '';
+      
+      // 默认选中当前用户
+      if (currentUser) {
+        document.getElementById('customer-salesman-id').value = currentUser.id;
+      }
+      
+      document.getElementById('customer-modal').classList.remove('hidden');
+    }
+
+    // 编辑客户
+    function editCustomer(id) {
+      const customer = mockData.customers.find(c => c.id === id);
+      if (!customer) return;
+      
+      // 检查权限
+      if (!hasPermission('admin') && customer.salesmanId !== null && customer.salesmanId !== currentUser.id) {
+        alert('您没有权限编辑此客户');
+        return;
+      }
+      
+      document.getElementById('customer-modal-title').textContent = '编辑客户';
+      document.getElementById('customer-id').value = customer.id;
+      document.getElementById('customer-name').value = customer.name;
+      document.getElementById('contact-person').value = customer.contactPerson;
+      document.getElementById('contact-phone').value = customer.contactPhone;
+      document.getElementById('customer-salesman-id').value = customer.salesmanId || '';
+      document.getElementById('customer-status').value = customer.status;
+      document.getElementById('next-follow-date').value = customer.nextFollowDate || '';
+      document.getElementById('customer-notes').value = customer.notes || '';
+      
+      document.getElementById('customer-modal').classList.remove('hidden');
+    }
+
+    // 关闭客户模态框
+    function closeCustomerModal() {
+      document.getElementById('customer-modal').classList.add('hidden');
+    }
+
+    // 保存客户信息
+    function saveCustomer(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('customer-id').value;
+      const salesmanId = document.getElementById('customer-salesman-id').value 
+        ? parseInt(document.getElementById('customer-salesman-id').value) 
+        : null;
+      
+      // 检查权限（业务员只能创建/编辑自己的客户或公海客户）
+      if (!hasPermission('admin')) {
+        if (id) {
+          const existingCustomer = mockData.customers.find(c => c.id == id);
+          if (existingCustomer.salesmanId !== null && existingCustomer.salesmanId !== currentUser.id) {
+            alert('您没有权限编辑此客户');
+            return;
+          }
+        } else if (salesmanId !== null && salesmanId !== currentUser.id) {
+          alert('您只能将新客户分配给自己或放入公海');
+          return;
+        }
+      }
+      
+      const customerData = {
+        name: document.getElementById('customer-name').value,
+        contactPerson: document.getElementById('contact-person').value,
+        contactPhone: document.getElementById('contact-phone').value,
+        salesmanId: salesmanId,
+        status: document.getElementById('customer-status').value,
+        nextFollowDate: document.getElementById('next-follow-date').value,
+        notes: document.getElementById('customer-notes').value,
+        lastFollowDate: id ? mockData.customers.find(c => c.id == id).lastFollowDate : '',
+        createTime: id ? mockData.customers.find(c => c.id == id).createTime : new Date().toISOString()
+      };
+      
+      if (id) {
+        // 更新现有客户
+        const index = mockData.customers.findIndex(c => c.id == id);
+        if (index !== -1) {
+          mockData.customers[index] = { ...mockData.customers[index], ...customerData };
+        }
+      } else {
+        // 添加新客户
+        const newId = Math.max(...mockData.customers.map(c => c.id), 0) + 1;
+        mockData.customers.push({ id: newId, ...customerData });
+      }
+      
+      // 保存数据
+      saveData('salesSystemCustomers', mockData.customers);
+      
+      // 刷新数据
+      renderDashboard();
+      renderCustomers();
+      renderTasks();
+      populateSalesmanSelects();
+      
+      // 关闭模态框
+      closeCustomerModal();
+    }
+
+    // 显示添加业务员模态框
+    function showAddSalesmanModal() {
+      // 检查权限
+      if (!hasPermission('admin')) return;
+      
+      document.getElementById('add-salesman-form').reset();
+      document.getElementById('salesman-error').classList.add('hidden');
+      document.getElementById('add-salesman-modal').classList.remove('hidden');
+    }
+
+    // 关闭添加业务员模态框
+    function closeAddSalesmanModal() {
+      document.getElementById('add-salesman-modal').classList.add('hidden');
+    }
+
+    // 添加业务员
+    function addSalesman(e) {
+      e.preventDefault();
+      
+      // 检查权限
+      if (!hasPermission('admin')) return;
+      
+      const username = document.getElementById('salesman-username').value;
+      const name = document.getElementById('salesman-name').value;
+      const password = document.getElementById('salesman-password').value;
+      const role = document.getElementById('salesman-role').value;
+      const errorEl = document.getElementById('salesman-error');
+      
+      // 验证
+      if (password.length < 6) {
+        errorEl.textContent = '密码长度不能少于6位';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      // 检查用户名是否已存在
+      const userExists = mockData.users.some(u => u.username === username);
+      if (userExists) {
+        errorEl.textContent = '用户名已存在';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      // 创建新用户
+      const newId = Math.max(...mockData.users.map(u => u.id), 0) + 1;
+      mockData.users.push({
+        id: newId,
+        username,
+        password,
+        name,
+        avatar: `https://picsum.photos/200/200?random=${newId + 10}`,
+        role: role
+      });
+      
+      // 保存数据
+      saveData('salesSystemUsers', mockData.users);
+      
+      // 刷新数据
+      renderSalesmen();
+      populateSalesmanSelects();
+      renderCustomers();
+      renderTasks();
+      
+      // 关闭模态框
+      closeAddSalesmanModal();
+    }
+
+    // 显示删除确认模态框
+    function showDeleteModal(id, type) {
+      // 检查权限
+      if (!hasPermission('admin')) return;
+      
+      let message = '';
+      if (type === 'customer') {
+        message = '您确定要删除这个客户吗？此操作将同时删除相关的跟进记录，且无法恢复。';
+      } else if (type === 'followup') {
+        message = '您确定要删除这条跟进记录吗？此操作无法恢复。';
+      } else if (type === 'salesman') {
+        const customerCount = mockData.customers.filter(c => c.salesmanId === id).length;
+        if (customerCount > 0) {
+          message = `此业务员负责 ${customerCount} 个客户，请先重新分配这些客户的负责人或放回公海，再删除此业务员。`;
+          document.querySelector('#confirm-delete-modal button:last-child').disabled = true;
+          document.querySelector('#confirm-delete-modal button:last-child').classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          message = '您确定要删除这个业务员吗？此操作无法恢复。';
+          document.querySelector('#confirm-delete-modal button:last-child').disabled = false;
+          document.querySelector('#confirm-delete-modal button:last-child').classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      }
+      
+      document.getElementById('delete-confirm-message').textContent = message;
+      document.getElementById('delete-id').value = id;
+      document.getElementById('delete-type').value = type;
+      document.getElementById('confirm-delete-modal').classList.remove('hidden');
+    }
+
+    // 关闭删除确认模态框
+    function closeDeleteModal() {
+      document.getElementById('confirm-delete-modal').classList.add('hidden');
+      document.querySelector('#confirm-delete-modal button:last-child').disabled = false;
+      document.querySelector('#confirm-delete-modal button:last-child').classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    // 确认删除
+    function confirmDelete() {
+      const id = parseInt(document.getElementById('delete-id').value);
+      const type = document.getElementById('delete-type').value;
+      
+      // 检查权限
+      if (!hasPermission('admin')) {
+        closeDeleteModal();
+        return;
+      }
+      
+      if (type === 'customer') {
+        // 删除客户
+        mockData.customers = mockData.customers.filter(c => c.id !== id);
+        
+        // 删除相关的跟进记录
+        mockData.followups = mockData.followups.filter(f => f.customerId !== id);
+        
+        // 保存数据
+        saveData('salesSystemCustomers', mockData.customers);
+        saveData('salesSystemFollowups', mockData.followups);
+        
+        // 刷新数据
+        renderDashboard();
+        renderCustomers();
+        renderFollowups();
+        renderTasks();
+      } else if (type === 'followup') {
+        // 删除跟进记录
+        mockData.followups = mockData.followups.filter(f => f.id !== id);
+        
+        // 保存数据
+        saveData('salesSystemFollowups', mockData.followups);
+        
+        // 刷新数据
+        renderFollowups();
+      } else if (type === 'salesman') {
+        // 删除业务员
+        mockData.users = mockData.users.filter(u => u.id !== id);
+        
+        // 保存数据
+        saveData('salesSystemUsers', mockData.users);
+        
+        // 刷新数据
+        renderSalesmen();
+        populateSalesmanSelects();
+        renderCustomers();
+        renderTasks();
+      }
+      
+      // 关闭模态框
+      closeDeleteModal();
+    }
+
+    // 显示操作确认模态框（领取/放回客户）
+    function showActionModal(id, type) {
+      const customer = mockData.customers.find(c => c.id === id);
+      if (!customer) return;
+      
+      let title = '';
+      let message = '';
+      
+      if (type === 'claim') {
+        title = '领取客户';
+        message = `您确定要领取客户"${customer.name}"吗？领取后您将成为该客户的负责人。`;
+      } else if (type === 'release') {
+        title = '放回公海';
+        message = `您确定要将客户"${customer.name}"放回公海吗？其他业务员将可以领取此客户。`;
+      }
+      
+      document.getElementById('action-modal-title').textContent = title;
+      document.getElementById('action-confirm-message').textContent = message;
+      document.getElementById('action-id').value = id;
+      document.getElementById('action-type').value = type;
+      document.getElementById('confirm-action-modal').classList.remove('hidden');
+    }
+
+    // 关闭操作确认模态框
+    function closeActionModal() {
+      document.getElementById('confirm-action-modal').classList.add('hidden');
+    }
+
+    // 确认操作（领取/放回客户）
+    function confirmAction() {
+      const id = parseInt(document.getElementById('action-id').value);
+      const type = document.getElementById('action-type').value;
+      
+      const index = mockData.customers.findIndex(c => c.id === id);
+      if (index === -1) {
+        closeActionModal();
+        return;
+      }
+      
+      if (type === 'claim') {
+        // 领取客户
+        mockData.customers[index].salesmanId = currentUser.id;
+        
+        // 自动创建一条跟进记录
+        const newFollowupId = Math.max(...mockData.followups.map(f => f.id), 0) + 1;
+        mockData.followups.push({
+          id: newFollowupId,
+          customerId: id,
+          customerName: mockData.customers[index].name,
+          userId: currentUser.id,
+          userName: currentUser.name,
+          type: 'other',
+          date: new Date().toISOString().slice(0, 16),
+          content: '从公海领取客户，开始跟进',
+          nextDate: ''
+        });
+        
+        alert('客户领取成功！');
+      } else if (type === 'release') {
+        // 放回公海
+        // 检查权限
+        const customer = mockData.customers[index];
+        if (!hasPermission('admin') && customer.salesmanId !== currentUser.id) {
+          alert('您没有权限将此客户放回公海');
+          closeActionModal();
+          return;
+        }
+        
+        mockData.customers[index].salesmanId = null;
+        
+        // 自动创建一条跟进记录
+        const newFollowupId = Math.max(...mockData.followups.map(f => f.id), 0) + 1;
+        mockData.followups.push({
+          id: newFollowupId,
+          customerId: id,
+          customerName: mockData.customers[index].name,
+          userId: currentUser.id,
+          userName: currentUser.name,
+          type: 'other',
+          date: new Date().toISOString().slice(0, 16),
+          content: '将客户放回公海',
+          nextDate: ''
+        });
+        
+        alert('客户已放回公海！');
+      }
+      
+      // 保存数据
+      saveData('salesSystemCustomers', mockData.customers);
+      saveData('salesSystemFollowups', mockData.followups);
+      
+      // 刷新数据
+      renderDashboard();
+      renderCustomers();
+      renderFollowups();
+      renderTasks();
+      
+      // 关闭模态框
+      closeActionModal();
+    }
+
+    // 打开跟进记录模态框
+    function openFollowupModal(customerId = null) {
+      document.getElementById('followup-form').reset();
+      document.getElementById('followup-id').value = '';
+      document.getElementById('followup-date').value = new Date().toISOString().slice(0, 16);
+      
+      // 填充客户选择框
+      const customerSelect = document.getElementById('followup-customer');
+      customerSelect.innerHTML = '<option value="">选择客户</option>';
+      
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => 
+          c.salesmanId === currentUser.id || c.salesmanId === null
+        );
+      }
+      
+      accessibleCustomers.forEach(customer => {
+        const option = document.createElement('option');
+        option.value = customer.id;
+        option.textContent = customer.name + (customer.salesmanId === null ? ' (公海)' : '');
+        customerSelect.appendChild(option);
+      });
+      
+      // 如果指定了客户，选中该客户
+      if (customerId) {
+        customerSelect.value = customerId;
+      }
+      
+      document.getElementById('followup-modal').classList.remove('hidden');
+    }
+
+    // 编辑跟进记录
+    function editFollowup(id) {
+      const followup = mockData.followups.find(f => f.id === id);
+      if (!followup) return;
+      
+      // 检查权限
+      if (!hasPermission('admin') && followup.userId !== currentUser.id) {
+        alert('您没有权限编辑此跟进记录');
+        return;
+      }
+      
+      // 填充客户选择框
+      const customerSelect = document.getElementById('followup-customer');
+      customerSelect.innerHTML = '<option value="">选择客户</option>';
+      
+      // 获取有权限查看的客户
+      let accessibleCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        accessibleCustomers = mockData.customers.filter(c => c.salesmanId === currentUser.id);
+      }
+      
+      accessibleCustomers.forEach(customer => {
+        const option = document.createElement('option');
+        option.value = customer.id;
+        option.textContent = customer.name;
+        if (customer.id === followup.customerId) {
+          option.selected = true;
+        }
+        customerSelect.appendChild(option);
+      });
+      
+      document.getElementById('followup-id').value = followup.id;
+      document.getElementById('followup-type').value = followup.type;
+      document.getElementById('followup-date').value = followup.date;
+      document.getElementById('followup-content').value = followup.content;
+      document.getElementById('followup-next-date').value = followup.nextDate || '';
+      
+      document.getElementById('followup-modal').classList.remove('hidden');
+    }
+
+    // 关闭跟进记录模态框
+    function closeFollowupModal() {
+      document.getElementById('followup-modal').classList.add('hidden');
+    }
+
+    // 保存跟进记录
+    function saveFollowup(e) {
+      e.preventDefault();
+      
+      const id = document.getElementById('followup-id').value;
+      const customerId = parseInt(document.getElementById('followup-customer').value);
+      const customer = mockData.customers.find(c => c.id === customerId);
+      
+      if (!customer) {
+        alert('请选择客户');
+        return;
+      }
+      
+      // 检查权限（业务员只能跟进自己的客户或公海客户）
+      if (!hasPermission('admin') && customer.salesmanId !== null && customer.salesmanId !== currentUser.id) {
+        alert('您没有权限跟进此客户，请先从公海领取');
+        return;
+      }
+      
+      // 如果跟进公海客户，自动领取
+      if (customer.salesmanId === null) {
+        const customerIndex = mockData.customers.findIndex(c => c.id === customerId);
+        if (customerIndex !== -1) {
+          mockData.customers[customerIndex].salesmanId = currentUser.id;
+        }
+      }
+      
+      const followupData = {
+        customerId,
+        customerName: customer.name,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        type: document.getElementById('followup-type').value,
+        date: document.getElementById('followup-date').value,
+        content: document.getElementById('followup-content').value,
+        nextDate: document.getElementById('followup-next-date').value
+      };
+      
+      // 更新客户信息
+      const customerIndex = mockData.customers.findIndex(c => c.id === customerId);
+      if (customerIndex !== -1) {
+        mockData.customers[customerIndex].lastFollowDate = followupData.date.split('T')[0];
+        
+        // 如果未设置下次跟进日期，则清空客户的nextFollowDate
+        if (followupData.nextDate) {
+          mockData.customers[customerIndex].nextFollowDate = followupData.nextDate;
+        } else {
+          mockData.customers[customerIndex].nextFollowDate = '';
+        }
+      }
+      // 继续完善saveFollowup函数
+      if (id) {
+        // 更新现有跟进记录
+        const index = mockData.followups.findIndex(f => f.id == id);
+        if (index !== -1) {
+          mockData.followups[index] = { ...mockData.followups[index], ...followupData };
+        }
+      } else {
+        // 添加新跟进记录
+        const newId = Math.max(...mockData.followups.map(f => f.id), 0) + 1;
+        mockData.followups.push({ id: newId, ...followupData });
+      }
+      
+      // 保存数据
+      saveData('salesSystemCustomers', mockData.customers);
+      saveData('salesSystemFollowups', mockData.followups);
+      
+      // 刷新数据
+      renderDashboard();
+      renderCustomers();
+      renderFollowups();
+      renderTasks();
+      
+      // 关闭模态框
+      closeFollowupModal();
+      alert('跟进记录保存成功');
+    }
+
+    // 打开分配客户模态框
+    function openAssignModal(customerId) {
+      // 检查权限
+      if (!hasPermission('admin')) return;
+      
+      const customer = mockData.customers.find(c => c.id === customerId);
+      if (!customer) return;
+      
+      // 填充客户信息
+      document.getElementById('assign-customer-id').value = customerId;
+      document.getElementById('assign-customer-name').textContent = customer.name;
+      
+      // 填充业务员选择框
+      const select = document.getElementById('assign-salesman');
+      select.innerHTML = '<option value="">选择业务员</option>';
+      
+      mockData.users.forEach(user => {
+        // 排除管理员，只显示业务员（或包含管理员）
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = `${user.name} (${user.role === 'admin' ? '管理员' : '业务员'})`;
+        // 如果客户已有负责人，默认选中
+        if (customer.salesmanId && customer.salesmanId === user.id) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+      
+      document.getElementById('assign-modal').classList.remove('hidden');
+    }
+
+    // 关闭分配客户模态框
+    function closeAssignModal() {
+      document.getElementById('assign-modal').classList.add('hidden');
+    }
+
+    // 处理客户分配
+    function handleAssign(e) {
+      e.preventDefault();
+      
+      const customerId = parseInt(document.getElementById('assign-customer-id').value);
+      const salesmanId = parseInt(document.getElementById('assign-salesman').value);
+      
+      if (!salesmanId) {
+        alert('请选择要分配的业务员');
+        return;
+      }
+      
+      const customerIndex = mockData.customers.findIndex(c => c.id === customerId);
+      if (customerIndex === -1) {
+        closeAssignModal();
+        return;
+      }
+      
+      // 保存原始负责人ID用于记录
+      const oldSalesmanId = mockData.customers[customerIndex].salesmanId;
+      
+      // 更新客户负责人
+      mockData.customers[customerIndex].salesmanId = salesmanId;
+      
+      // 记录分配操作（作为一条跟进记录）
+      const salesman = mockData.users.find(u => u.id === salesmanId);
+      const customer = mockData.customers[customerIndex];
+      
+      const newFollowupId = Math.max(...mockData.followups.map(f => f.id), 0) + 1;
+      mockData.followups.push({
+        id: newFollowupId,
+        customerId: customerId,
+        customerName: customer.name,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        type: 'other',
+        date: new Date().toISOString().slice(0, 16),
+        content: oldSalesmanId === null 
+          ? `将客户从公海分配给${salesman.name}` 
+          : `将客户从${mockData.users.find(u => u.id === oldSalesmanId)?.name || '未知'}重新分配给${salesman.name}`,
+        nextDate: customer.nextFollowDate || ''
+      });
+      
+      // 保存数据
+      saveData('salesSystemCustomers', mockData.customers);
+      saveData('salesSystemFollowups', mockData.followups);
+      
+      // 刷新数据
+      renderCustomers();
+      renderFollowups();
+      renderDashboard();
+      renderTasks();
+      
+      // 关闭模态框
+      closeAssignModal();
+      alert('客户分配成功');
+    }
+
+    // 切换移动端菜单
+    function toggleMobileMenu() {
+      const aside = document.querySelector('aside');
+      aside.classList.toggle('hidden');
+    }
+
+    // 显示通知（示例实现）
+    function showNotifications() {
+      // 筛选出逾期任务作为通知
+      const overdueTasks = mockData.customers.filter(c => {
+        if (!c.nextFollowDate) return false;
+        const isOverdue = new Date(c.nextFollowDate) < new Date(today);
+        const isAccessible = hasPermission('admin') || c.salesmanId === currentUser.id;
+        return isOverdue && isAccessible;
+      });
+      
+      if (overdueTasks.length === 0) {
+        alert('暂无通知');
+        return;
+      }
+      
+      let message = '您有以下逾期未跟进的客户：\n';
+      overdueTasks.forEach((task, index) => {
+        message += `${index + 1}. ${task.name}（应于${task.nextFollowDate}跟进）\n`;
+      });
+      
+      alert(message);
+    }
+
+    // 导入客户数据相关函数
+    function closeImportResultModal() {
+      document.getElementById('import-result-modal').classList.add('hidden');
+    }
+
+    // 解析CSV行（处理引号和逗号）
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+          // 连续两个引号视为一个引号
+          if (i < line.length - 1 && line[i+1] === '"') {
+            current += '"';
+            i++; // 跳过下一个引号
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      // 添加最后一个字段
+      result.push(current);
+      return result;
+    }
+
+    // 导出客户数据为CSV
+    function exportCustomers() {
+      // 获取有权限导出的客户
+      let exportCustomers = mockData.customers;
+      if (!hasPermission('admin')) {
+        exportCustomers = mockData.customers.filter(c => 
+          c.salesmanId === currentUser.id || c.salesmanId === null
+        );
+      }
+      
+      // CSV表头
+      const headers = [
+        '客户名称', 
+        '联系人', 
+        '联系电话', 
+        '负责人', 
+        '状态', 
+        '下次跟进日期', 
+        '上次跟进日期', 
+        '备注'
+      ];
+      
+      // 转换数据
+      const rows = exportCustomers.map(customer => {
+        const salesman = customer.salesmanId ? 
+          mockData.users.find(u => u.id === customer.salesmanId)?.name || '未知' : '公海';
+        
+        let statusText = '';
+        switch(customer.status) {
+          case 'potential': statusText = '潜在客户'; break;
+          case 'following': statusText = '跟进中'; break;
+          case 'dealt': statusText = '已成交'; break;
+          case 'lost': statusText = '已流失'; break;
+          default: statusText = '未知';
+        }
+        
+        return [
+          customer.name || '',
+          customer.contactPerson || '',
+          customer.contactPhone || '',
+          salesman,
+          statusText,
+          customer.nextFollowDate || '',
+          customer.lastFollowDate || '',
+          (customer.notes || '').replace(/\n/g, ' ') // 替换换行符
+        ].map(field => {
+          // 处理包含逗号或引号的字段
+          if (field.includes(',') || field.includes('"')) {
+            return `"${field.replace(/"/g, '""')}"`;
+          }
+          return field;
+        }).join(',');
+      });
+      
+      // 组合CSV内容
+      const csvContent = [
+        headers.join(','),
+        ...rows
+      ].join('\n');
+      
+      // 创建下载链接
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // 添加BOM解决中文乱码
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      // 生成带日期的文件名
+      const date = new Date();
+      const fileName = `客户数据_${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2,'0')}${date.getDate().toString().padStart(2,'0')}.csv`;
+      link.setAttribute('download', fileName);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 下载客户导入模板
+    function downloadCustomerTemplate() {
+      // 模板表头
+      const headers = [
+        '客户名称*', 
+        '联系人*', 
+        '联系电话*', 
+        '负责人（用户名）', 
+        '状态（潜在客户/跟进中/已成交/已流失）', 
+        '下次跟进日期（YYYY-MM-DD）', 
+        '备注'
+      ];
+      
+      // 示例数据
+      const exampleRow = [
+        '示例科技公司',
+        '张三',
+        '13800138000',
+        'zhangsan',
+        '跟进中',
+        '',
+        '这是一条备注'
+      ].map(field => {
+        if (field.includes(',') || field.includes('"')) {
+          return `"${field.replace(/"/g, '""')}"`;
+        }
+        return field;
+      }).join(',');
+      
+      // 组合CSV内容
+      const csvContent = [
+        headers.join(','),
+        exampleRow,
+        '（带*号为必填项）'
+      ].join('\n');
+      
+      // 创建下载链接
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', '客户导入模板.csv');
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 导入客户数据
+    function importCustomers(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const lines = content.split('\n').filter(line => line.trim() !== '');
+          if (lines.length < 1) {
+            alert('文件内容为空');
+            return;
+          }
+          
+          // 解析CSV
+          const result = {
+            success: 0,
+            errors: []
+          };
+          
+          // 跳过表头行
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i];
+            const row = parseCSVLine(line);
+            
+            // 验证必填项
+            if (!row[0] || !row[1] || !row[2]) {
+              result.errors.push(`第${i+1}行：客户名称、联系人、联系电话为必填项`);
+              continue;
+            }
+            
+            // 查找负责人
+            let salesmanId = null;
+            if (row[3]) {
+              const salesman = mockData.users.find(u => u.username === row[3]);
+              if (salesman) {
+                salesmanId = salesman.id;
+              } else {
+                result.errors.push(`第${i+1}行：负责人"${row[3]}"不存在`);
+                continue;
+              }
+            }
+            
+            // 验证状态
+            let status = 'potential';
+            if (row[4]) {
+              const statusMap = {
+                '潜在客户': 'potential',
+                '跟进中': 'following',
+                '已成交': 'dealt',
+                '已流失': 'lost'
+              };
+              status = statusMap[row[4]] || 'potential';
+              if (!statusMap[row[4]]) {
+                result.errors.push(`第${i+1}行：状态"${row[4]}"无效，已自动设为潜在客户`);
+              }
+            }
+            
+            // 验证日期格式
+            let nextFollowDate = row[5] || '';
+            if (nextFollowDate && !/^\d{4}-\d{2}-\d{2}$/.test(nextFollowDate)) {
+              result.errors.push(`第${i+1}行：日期格式无效，应为YYYY-MM-DD`);
+              nextFollowDate = '';
+            }
+            
+            // 检查客户是否已存在（通过电话判断）
+            const existingIndex = mockData.customers.findIndex(c => c.contactPhone === row[2]);
+            if (existingIndex !== -1) {
+              // 更新现有客户
+              mockData.customers[existingIndex] = {
+                ...mockData.customers[existingIndex],
+                name: row[0],
+                contactPerson: row[1],
+                salesmanId: salesmanId || mockData.customers[existingIndex].salesmanId,
+                status: status,
+                nextFollowDate: nextFollowDate || mockData.customers[existingIndex].nextFollowDate,
+                notes: row[6] || mockData.customers[existingIndex].notes
+              };
+            } else {
+              // 创建新客户
+              const newId = Math.max(...mockData.customers.map(c => c.id), 0) + 1;
+              mockData.customers.push({
+                id: newId,
+                name: row[0],
+                contactPerson: row[1],
+                contactPhone: row[2],
+                salesmanId: salesmanId,
+                status: status,
+                nextFollowDate: nextFollowDate,
+                lastFollowDate: '',
+                notes: row[6] || '',
+                createTime: new Date().toISOString()
+              });
+            }
+            
+            result.success++;
+          }
+          
+          // 保存数据
+          saveData('salesSystemCustomers', mockData.customers);
+          
+          // 刷新数据
+          renderDashboard();
+          renderCustomers();
+          renderTasks();
+          
+          // 显示导入结果
+          document.getElementById('import-success-count').textContent = `成功导入 ${result.success} 条客户数据`;
+          document.getElementById('import-success').classList.toggle('hidden', result.success === 0);
+          
+          const errorList = document.getElementById('import-error-list');
+          errorList.innerHTML = '';
+          if (result.errors.length > 0) {
+            document.getElementById('import-errors').classList.remove('hidden');
+            result.errors.forEach(error => {
+              const li = document.createElement('li');
+              li.textContent = error;
+              errorList.appendChild(li);
+            });
+          } else {
+            document.getElementById('import-errors').classList.add('hidden');
+          }
+          
+          document.getElementById('import-result-modal').classList.remove('hidden');
+          
+        } catch (error) {
+          console.error('导入失败:', error);
+          alert('导入失败：' + error.message);
+        }
+        
+        // 重置文件输入
+        document.getElementById('import-file').value = '';
+      };
+      
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
